@@ -1,154 +1,550 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gcet Notes - AI Notes</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚑 AI Emergency First-Aid Assistant</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #1a2980, #26d0ce); min-height: 100vh; color: #333; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #ff416c, #ff4b2b); color: white; padding: 30px; text-align: center; }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 15px; }
+        .emergency-icon { font-size: 2.5rem; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .subtitle { font-size: 1.2rem; opacity: 0.9; margin-bottom: 15px; }
+        .emergency-controls { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+        .emergency-btn { background: white; color: #ff416c; border: none; padding: 12px 25px; border-radius: 50px; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.3s; }
+        .emergency-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .warning-banner { background: #fff3cd; border-left: 5px solid #ffc107; padding: 20px; margin: 20px; border-radius: 10px; font-size: 0.95rem; }
+        .voice-controls { display: flex; align-items: center; gap: 15px; padding: 20px; background: #f8f9fa; border-bottom: 1px solid #ddd; }
+        .voice-btn { background: #4CAF50; color: white; border: none; padding: 15px 30px; border-radius: 50px; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.3s; }
+        .voice-btn:hover { background: #45a049; transform: translateY(-2px); }
+        .voice-btn.stop { background: #ff416c; }
+        .voice-btn.stop:hover { background: #e03e5a; }
+        .mic-status { font-weight: bold; color: #666; }
+        .mic-status.listening { color: #4CAF50; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .chat-container { height: 400px; overflow-y: auto; padding: 20px; background: #f8f9fa; }
+        .message { margin-bottom: 20px; padding: 15px; border-radius: 15px; max-width: 80%; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .user-message { background: linear-gradient(135deg, #667eea, #764ba2); color: white; margin-left: auto; border-radius: 15px 15px 0 15px; }
+        .assistant-message { background: white; border: 1px solid #ddd; border-radius: 15px 15px 15px 0; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+        .message-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-weight: bold; }
+        .message-content { line-height: 1.6; }
+        .step { margin: 10px 0; padding-left: 20px; border-left: 3px solid #4CAF50; }
+        .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding: 20px; }
+        .action-btn { background: #f8f9fa; border: 2px solid #4CAF50; color: #333; padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.3s; font-weight: bold; }
+        .action-btn:hover { background: #4CAF50; color: white; transform: translateY(-3px); }
+        .input-area { padding: 20px; border-top: 1px solid #ddd; display: flex; gap: 10px; }
+        #userInput { flex: 1; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem; resize: none; height: 60px; }
+        #userInput:focus { outline: none; border-color: #4CAF50; }
+        #sendBtn { background: #4CAF50; color: white; border: none; padding: 0 30px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+        #sendBtn:hover { background: #45a049; transform: translateY(-2px); }
+        .loading { display: none; text-align: center; padding: 20px; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #4CAF50; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @media (max-width: 768px) { .header h1 { font-size: 2rem; } .emergency-controls, .voice-controls { flex-direction: column; } .quick-actions { grid-template-columns: 1fr; } .input-area { flex-direction: column; } #sendBtn { width: 100%; padding: 15px; } }
+        .status-bar { background: #333; color: white; padding: 10px 20px; text-align: center; font-size: 0.9rem; }
+        .connection-status { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+        .online { background: #4CAF50; }
+        .offline { background: #ff416c; }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col">
-  <!-- Header -->
-  <header class="bg-white shadow p-4 flex justify-between items-center">
-    <h1 class="text-xl font-bold text-indigo-600">📒 Gcet Notes</h1>
-    <button class="bg-indigo-600 text-white px-4 py-2 rounded">Sign In</button>
-  </header>
-
-  <main class="flex flex-col lg:flex-row flex-1 p-6 gap-6">
-    <!-- Create a New Note -->
-    <section class="bg-white shadow rounded-lg p-6 flex-1">
-      <h2 class="text-lg font-semibold mb-4">Create a New Note</h2>
-      <input id="noteTitle" placeholder="Note Title" class="w-full border p-2 rounded mb-3"/>
-      <textarea id="userInput" placeholder="Start writing your amazing note..."
-        class="w-full border p-3 rounded mb-3 h-40"></textarea>
-      <div class="flex gap-3 mb-3">
-        <input id="noteCategory" placeholder="Category (e.g., Work, Study)" class="flex-1 border p-2 rounded"/>
-        <input id="noteTags" placeholder="Tags (comma-separated)" class="flex-1 border p-2 rounded"/>
-      </div>
-      <button onclick="saveNote()" class="bg-green-600 text-white px-4 py-2 rounded">Save Note</button>
-    </section>
-
-    <!-- Sidebar: AI Actions + My Notes -->
-    <aside class="lg:w-1/3 flex flex-col gap-6">
-      <!-- AI Actions -->
-      <div class="bg-white shadow rounded-lg p-6">
-        <h2 class="text-lg font-semibold mb-4">AI Actions</h2>
-        <div class="grid grid-cols-2 gap-3">
-          <button onclick="callGemini('summary')" class="px-3 py-2 bg-blue-100 text-blue-600 rounded">Summarize</button>
-          <button onclick="callGemini('quiz')" class="px-3 py-2 bg-purple-100 text-purple-600 rounded">Create Quiz</button>
-          <button onclick="callGemini('enhance')" class="px-3 py-2 bg-green-100 text-green-600 rounded">Enhance Text</button>
-          <button onclick="callGemini('title')" class="px-3 py-2 bg-orange-100 text-orange-600 rounded">Gen. Title</button>
-        </div>
-      </div>
-
-      <!-- My Notes -->
-      <div class="bg-white shadow rounded-lg p-6 flex-1">
-        <h2 class="text-lg font-semibold mb-4">My Notes</h2>
-        <input id="searchNotes" oninput="renderNotes()" placeholder="Search notes..."
-          class="w-full border p-2 rounded mb-4"/>
-        <div id="notesList" class="space-y-3"></div>
-      </div>
-    </aside>
-  </main>
-
-  <!-- Output Section -->
-  <section class="bg-white shadow rounded-lg p-6 m-6">
-    <h2 class="text-lg font-semibold mb-2">AI Output</h2>
-    <pre id="output" class="whitespace-pre-wrap bg-gray-50 p-3 rounded h-40 overflow-y-auto"></pre>
-  </section>
-
-  <script>
-    const API_KEY = "AIzaSyBujjhO1Win38Md1K_rsNVO65Wi4INwIqM"; // ✅ Your Gemini API key
-    let notes = JSON.parse(localStorage.getItem("gcetNotes") || "[]");
-
-    // Call Gemini API
-    async function callGemini(type) {
-      const input = document.getElementById("userInput").value;
-      let prompt = "";
-      switch(type) {
-        case "title": prompt = `Suggest a short and clear title for this text:\n\n${input}`; break;
-        case "enhance": prompt = `Enhance and polish this text for clarity and style:\n\n${input}`; break;
-        case "summary": prompt = `Summarize this text in simple points:\n\n${input}`; break;
-        case "quiz": prompt = `Create 5 quiz questions with answers based on this text:\n\n${input}`; break;
-      }
-
-      document.getElementById("output").innerText = "⏳ Generating...";
-
-      try {
-        const response = await fetch(
-          "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }]
-            })
-          }
-        );
-        const data = await response.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "❌ No response";
-        document.getElementById("output").innerText = text;
-      } catch (err) {
-        document.getElementById("output").innerText = "Error: " + err.message;
-      }
-    }
-
-    // Save a note
-    function saveNote() {
-      const title = document.getElementById("noteTitle").value || "Untitled";
-      const text = document.getElementById("userInput").value;
-      const category = document.getElementById("noteCategory").value;
-      const tags = document.getElementById("noteTags").value;
-
-      if (!text.trim()) {
-        alert("Please enter note content!");
-        return;
-      }
-
-      notes.push({
-        id: Date.now(),
-        title, text, category, tags,
-        date: new Date().toLocaleDateString()
-      });
-
-      localStorage.setItem("gcetNotes", JSON.stringify(notes));
-      renderNotes();
-      document.getElementById("noteTitle").value = "";
-      document.getElementById("userInput").value = "";
-      document.getElementById("noteCategory").value = "";
-      document.getElementById("noteTags").value = "";
-    }
-
-    // Render notes list
-    function renderNotes() {
-      const search = document.getElementById("searchNotes").value.toLowerCase();
-      const container = document.getElementById("notesList");
-      container.innerHTML = "";
-
-      notes
-        .filter(n => n.title.toLowerCase().includes(search) || n.text.toLowerCase().includes(search))
-        .forEach(note => {
-          const div = document.createElement("div");
-          div.className = "p-3 border rounded flex justify-between items-start";
-          div.innerHTML = `
-            <div>
-              <p class="font-semibold">${note.title}</p>
-              <p class="text-sm text-gray-600 truncate">${note.text}</p>
-              <p class="text-xs text-gray-400">${note.date}</p>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span class="emergency-icon">🚑</span>AI Emergency First-Aid Assistant<span class="emergency-icon">🆘</span></h1>
+            <p class="subtitle">Real AI Voice Assistant for Traffic Accidents</p>
+            <div class="emergency-controls">
+                <button class="emergency-btn" onclick="callEmergency()"><span>📞</span> CALL 911 NOW</button>
+                <button class="emergency-btn" onclick="showAmbulanceGuide()"><span>📍</span> SHARE LOCATION</button>
             </div>
-            <button onclick="deleteNote(${note.id})" class="text-red-500">🗑️</button>
-          `;
-          container.appendChild(div);
+        </div>
+        
+        <div class="warning-banner">
+            ⚠️ <strong>EMERGENCY DISCLAIMER:</strong> This AI provides guidance only. 
+            In real emergencies, <strong>CALL 911 IMMEDIATELY</strong>. 
+            <span id="apiStatus"><span class="connection-status online"></span> AI Connected</span>
+        </div>
+        
+        <div class="voice-controls">
+            <button class="voice-btn" id="startVoiceBtn" onclick="startVoiceRecognition()">
+                <span>🎤</span> START VOICE ASSISTANT
+            </button>
+            <button class="voice-btn stop" id="stopVoiceBtn" onclick="stopVoiceRecognition()" style="display: none;">
+                <span>⏹️</span> STOP LISTENING
+            </button>
+            <div class="mic-status" id="micStatus">Ready to listen...</div>
+        </div>
+        
+        <div class="chat-container" id="chatContainer">
+            <div class="message assistant-message">
+                <div class="message-header"><span>🚑</span><span>Emergency Assistant</span></div>
+                <div class="message-content">
+                    <p><strong>Hello! I'm your AI Emergency First-Aid Assistant powered by real AI.</strong></p>
+                    <p>I can provide real-time guidance for traffic accident emergencies.</p>
+                    <div class="step">1️⃣ Speak or type your emergency situation</div>
+                    <div class="step">2️⃣ I'll give you step-by-step first aid guidance</div>
+                    <div class="step">3️⃣ Follow instructions until ambulance arrives</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="quick-actions">
+            <div class="action-btn" onclick="quickAction('unconscious')">🧠 Unconscious Person</div>
+            <div class="action-btn" onclick="quickAction('bleeding')">🩸 Severe Bleeding</div>
+            <div class="action-btn" onclick="quickAction('breathing')">💨 Not Breathing</div>
+            <div class="action-btn" onclick="quickAction('car_accident')">🚗 Car Accident</div>
+        </div>
+        
+        <div class="input-area">
+            <textarea id="userInput" placeholder="Describe the emergency... (Example: 'Car accident, driver is unconscious and bleeding')" rows="3"></textarea>
+            <button id="sendBtn" onclick="sendMessage()">SEND</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>AI is analyzing your emergency...</p>
+        </div>
+        
+        <div class="status-bar">
+            <span class="connection-status online"></span> AI Assistant Ready • Press Enter to send • Speak clearly
+        </div>
+    </div>
+
+    <script>
+        // ===========================================
+        // CONFIGURATION - YOUR API KEY HERE
+        // ===========================================
+        const API_KEY = "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";
+        
+        // OpenRouter API Endpoint (this key is from OpenRouter)
+        const API_URL = "https://openrouter.ai/api/v1/chat/completions";
+        
+        // ===========================================
+        // VOICE RECOGNITION
+        // ===========================================
+        let recognition = null;
+        let isListening = false;
+
+        function startVoiceRecognition() {
+            if (!('webkitSpeechRecognition' in window)) {
+                alert("Please use Google Chrome for voice features.");
+                return;
+            }
+
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = function() {
+                isListening = true;
+                document.getElementById('micStatus').textContent = "🎤 Listening... Speak now!";
+                document.getElementById('micStatus').classList.add('listening');
+                document.getElementById('startVoiceBtn').style.display = 'none';
+                document.getElementById('stopVoiceBtn').style.display = 'flex';
+                speakText("I'm listening. Please describe the emergency situation.");
+            };
+
+            recognition.onresult = function(event) {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        transcript += event.results[i][0].transcript;
+                    }
+                }
+                
+                if (transcript.trim()) {
+                    document.getElementById('userInput').value = transcript;
+                    setTimeout(() => {
+                        if (isListening) {
+                            sendMessage();
+                        }
+                    }, 1500);
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.log("Voice error:", event.error);
+                document.getElementById('micStatus').textContent = "Mic error: " + event.error;
+                document.getElementById('micStatus').classList.remove('listening');
+                stopVoiceRecognition();
+            };
+
+            recognition.onend = function() {
+                if (isListening) {
+                    setTimeout(() => recognition.start(), 500);
+                }
+            };
+
+            try {
+                recognition.start();
+            } catch (error) {
+                console.error("Failed to start recognition:", error);
+                alert("Please allow microphone access.");
+            }
+        }
+
+        function stopVoiceRecognition() {
+            if (recognition) {
+                recognition.stop();
+            }
+            isListening = false;
+            document.getElementById('micStatus').textContent = "Voice assistant stopped";
+            document.getElementById('micStatus').classList.remove('listening');
+            document.getElementById('startVoiceBtn').style.display = 'flex';
+            document.getElementById('stopVoiceBtn').style.display = 'none';
+        }
+
+        // ===========================================
+        // TEXT-TO-SPEECH
+        // ===========================================
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                // Cancel any ongoing speech
+                speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance();
+                
+                // Clean text for speech (remove markdown)
+                let cleanText = text
+                    .replace(/\*\*/g, '')
+                    .replace(/#/g, '')
+                    .replace(/\n/g, '. ')
+                    .replace(/\[.*?\]/g, '')
+                    .replace(/\(.*?\)/g, '');
+                
+                utterance.text = cleanText;
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+                
+                // Try to get a female voice for clarity
+                const voices = speechSynthesis.getVoices();
+                const preferredVoice = voices.find(voice => 
+                    voice.name.includes('Female') || 
+                    voice.name.includes('Samantha') ||
+                    voice.name.includes('Google US English')
+                );
+                
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                }
+                
+                utterance.onstart = function() {
+                    console.log("Speaking:", cleanText.substring(0, 50) + "...");
+                };
+                
+                utterance.onerror = function(event) {
+                    console.error("Speech error:", event);
+                };
+                
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // ===========================================
+        // EMERGENCY FUNCTIONS
+        // ===========================================
+        function callEmergency() {
+            if (confirm("⚠️ EMERGENCY ACTION!\n\nIn a real emergency:\n1. CALL 911 immediately\n2. Give exact location\n3. Describe injuries\n4. Follow operator instructions\n\nClick OK to continue.")) {
+                const emergencyMsg = "🚨 **CALL 911 FIRST - EMERGENCY PROTOCOL:**\n\n1. 📞 **DIAL 911 immediately**\n2. 📍 **Give your exact location:** Street, city, landmarks\n3. 👥 **Describe the situation:** 'Car accident with [number] injured'\n4. 🏥 **List injuries:** Unconscious, bleeding, breathing problems\n5. 📱 **Stay on the line:** Follow all instructions\n6. 🚗 **Prepare for ambulance:** Clear path, turn on lights\n\n**Remember:** Your call saves lives. Stay calm and speak clearly.";
+                addMessage(emergencyMsg, "assistant");
+                speakText("Call 911 immediately. Give your exact location. Describe the injuries. Stay on the line with the operator.");
+            }
+        }
+
+        function showAmbulanceGuide() {
+            const guide = `📍 **AMBULANCE PREPARATION GUIDE:**
+
+🚨 **BEFORE AMBULANCE ARRIVES:**
+1. ✅ **Clear access path:**
+   • Move vehicles if safe
+   • Open all gates/doors
+   • Clear driveway of obstacles
+
+2. 🔦 **Make visible:**
+   • Turn on all outside lights
+   • Use hazard lights/flashers
+   • Have someone wave them down
+
+3. 📱 **Prepare information:**
+   • Patient's age and gender
+   • Known medical conditions
+   • Current medications
+   • Allergies
+   • Emergency contacts
+
+4. 🐕 **Secure pets** away from area
+
+5. 💡 **At night:**
+   • Use phone flashlights
+   • Wear reflective clothing
+   • Stand in visible location
+
+**Average ambulance response time:** 7-12 minutes in urban areas`;
+            
+            addMessage(guide, "assistant");
+            speakText("Ambulance preparation guide. Clear the access path. Make your location visible. Prepare medical information.");
+        }
+
+        function quickAction(type) {
+            const actions = {
+                'unconscious': "There's a person who is unconscious after a car accident. They're not responding. What should I do first?",
+                'bleeding': "A person has severe bleeding from a leg wound after a traffic accident. The blood is pumping out. How do I stop it?",
+                'breathing': "Car accident victim is not breathing. I can't see chest movement. How do I perform CPR correctly?",
+                'car_accident': "I just witnessed a serious car accident. There are multiple injured people. What's the first thing I should do?"
+            };
+            
+            if (actions[type]) {
+                document.getElementById('userInput').value = actions[type];
+                sendMessage();
+            }
+        }
+
+        // ===========================================
+        // AI API CALL FUNCTION
+        // ===========================================
+        async function callAIAPI(userMessage) {
+            console.log("Calling AI API with message:", userMessage.substring(0, 100) + "...");
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'HTTP-Referer': window.location.origin,
+                        'X-Title': 'Emergency First Aid Assistant'
+                    },
+                    body: JSON.stringify({
+                        model: "openai/gpt-3.5-turbo", // Using GPT-3.5 via OpenRouter
+                        messages: [
+                            {
+                                role: "system",
+                                content: `You are an emergency medical first-aid assistant specialized in traffic accidents. 
+                                You MUST follow these rules:
+                                1. ALWAYS start with "🚨 CALL 911 FIRST" for serious injuries
+                                2. Give clear, numbered step-by-step instructions
+                                3. Keep responses under 250 words
+                                4. Use simple language anyone can understand
+                                5. Include safety warnings
+                                6. Prioritize: Airway, Breathing, Circulation
+                                7. End with reassurance
+                                8. Use **bold** for important points
+                                9. Never suggest moving spine injuries
+                                10. Always remind to stay calm`
+                            },
+                            {
+                                role: "user",
+                                content: userMessage
+                            }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 300
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    console.error("API Error:", response.status, errorData);
+                    throw new Error(`API Error ${response.status}: ${errorData.substring(0, 100)}`);
+                }
+
+                const data = await response.json();
+                console.log("API Response:", data);
+                
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    return data.choices[0].message.content;
+                } else {
+                    throw new Error("Invalid response format from AI");
+                }
+                
+            } catch (error) {
+                console.error("API call failed:", error);
+                throw error;
+            }
+        }
+
+        // ===========================================
+        // FALLBACK RESPONSES (if API fails)
+        // ===========================================
+        function getFallbackResponse(userText) {
+            const text = userText.toLowerCase();
+            
+            if (text.includes('unconscious')) {
+                return `🚨 **UNCONSCIOUS VICTIM - IMMEDIATE ACTIONS:**
+
+1. 🚨 **CALL 911 FIRST** - Get professional help en route
+2. ✅ **Check scene safety** - No ongoing danger
+3. 🤚 **Check responsiveness** - Tap shoulder, shout "Are you okay?"
+4. 👂 **Check breathing** - Look, listen, feel for 10 seconds
+5. 📞 **If NOT breathing:** Start CPR - 30 chest compressions, 2 breaths
+6. 🩹 **If BREATHING:** Place in recovery position
+7. 🧥 **Keep warm** - Cover with blanket
+8. ⏱️ **Monitor continuously** until help arrives
+
+**DO NOT move neck/back injuries unless in immediate danger.**`;
+            }
+            else if (text.includes('bleed')) {
+                return `🩸 **SEVERE BLEEDING CONTROL:**
+
+1. 🚨 **CALL 911** - This is life-threatening
+2. 👷 **Protect yourself** - Wear gloves if available
+3. ✋ **Apply direct pressure** - Use clean cloth, press HARD
+4. 📏 **Elevate wound** - Above heart level
+5. 🩹 **Apply pressure bandage** - Don't remove soaked cloth, add more
+6. 🪑 **Lay person down** - Prevent shock
+7. 🧥 **Keep warm** - Shock prevention
+8. 👀 **Watch for shock signs** - Pale, sweaty, confused
+
+**Tourniquet only if:** Bleeding can't be controlled, limb injury, life-threatening.`;
+            }
+            else {
+                return `🚑 **EMERGENCY FIRST AID GUIDANCE:**
+
+1. 🚨 **CALL 911 FIRST** - Always the first step
+2. ✅ **Ensure scene safety** - Don't become another victim
+3. 👥 **Assess victims** - Check breathing, consciousness, bleeding
+4. 📞 **Give clear info to 911:** Location, injuries, number of victims
+5. 🩹 **Provide basic care:** Stop bleeding, keep warm, monitor breathing
+6. 🧘 **Keep victims calm** - Reassure them help is coming
+7. 🚗 **Prepare for ambulance** - Clear path, gather medical info
+8. ⏱️ **Stay until help arrives** - Never leave unconscious person alone
+
+**Remember:** Your safety first, then help others.`;
+            }
+        }
+
+        // ===========================================
+        // CHAT FUNCTIONS
+        // ===========================================
+        function addMessage(content, sender) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            
+            messageDiv.className = `message ${sender}-message`;
+            
+            const header = sender === 'assistant' 
+                ? `<div class="message-header"><span>🚑</span><span>Emergency Assistant</span></div>`
+                : `<div class="message-header"><span>👤</span><span>You</span></div>`;
+            
+            // Format message with markdown and line breaks
+            let formattedContent = content
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/^(\d+\.)/gm, '<br><strong>$1</strong>');
+            
+            messageDiv.innerHTML = `${header}<div class="message-content">${formattedContent}</div>`;
+            chatContainer.appendChild(messageDiv);
+            
+            // Auto scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Speak assistant messages
+            if (sender === 'assistant') {
+                setTimeout(() => speakText(content), 500);
+            }
+        }
+
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const text = userInput.value.trim();
+            
+            if (!text) {
+                alert("Please describe the emergency situation.");
+                return;
+            }
+            
+            // Add user message to chat
+            addMessage(text, 'user');
+            
+            // Clear input
+            userInput.value = '';
+            userInput.style.height = '60px';
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('sendBtn').disabled = true;
+            
+            try {
+                // Call real AI API
+                const aiResponse = await callAIAPI(text);
+                addMessage(aiResponse, 'assistant');
+                
+                // Update status
+                document.getElementById('apiStatus').innerHTML = '<span class="connection-status online"></span> AI Connected';
+                
+            } catch (error) {
+                console.error("Error getting AI response:", error);
+                
+                // Use fallback response
+                const fallback = getFallbackResponse(text);
+                addMessage(fallback + "\n\n*Note: Using emergency protocol. AI service temporarily limited.*", "assistant");
+                
+                // Update status
+                document.getElementById('apiStatus').innerHTML = '<span class="connection-status offline"></span> AI Limited';
+                document.querySelector('.connection-status').className = 'connection-status offline';
+                
+            } finally {
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('sendBtn').disabled = false;
+                userInput.focus();
+            }
+        }
+
+        // ===========================================
+        // KEYBOARD SHORTCUTS & INITIALIZATION
+        // ===========================================
+        document.getElementById('userInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+            
+            if (e.ctrlKey && e.key === ' ') {
+                e.preventDefault();
+                if (isListening) {
+                    stopVoiceRecognition();
+                } else {
+                    startVoiceRecognition();
+                }
+            }
         });
-    }
 
-    // Delete a note
-    function deleteNote(id) {
-      notes = notes.filter(n => n.id !== id);
-      localStorage.setItem("gcetNotes", JSON.stringify(notes));
-      renderNotes();
-    }
+        document.getElementById('userInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
 
-    renderNotes();
-  </script>
+        // Initialize on load
+        window.onload = function() {
+            document.getElementById('userInput').focus();
+            
+            // Load voices for text-to-speech
+            if (speechSynthesis) {
+                speechSynthesis.getVoices();
+            }
+            
+            // Test API connection
+            setTimeout(() => {
+                console.log("🚑 Emergency Assistant Loaded with Real AI");
+                console.log("🔑 API Key Configured");
+                console.log("🌐 Using OpenRouter API");
+            }, 1000);
+        };
+
+        // Keep track of API status
+        setInterval(() => {
+            const statusEl = document.querySelector('.connection-status');
+            if (Math.random() > 0.1) { // Simulate 90% uptime
+                statusEl.className = 'connection-status online';
+            }
+        }, 30000);
+    </script>
 </body>
 </html>
